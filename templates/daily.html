@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Today's Recommendations - Literary Recommendations{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">
+                Today's Literary Journey
+            </h1>
+            <p class="text-lg text-gray-600 mb-4">
+                {{ datetime.now().strftime("%A, %B %d, %Y") }}
+            </p>
+            <div class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                Day 1 of your literary adventure
+            </div>
+        </div>
+
+        <!-- Daily Recommendations -->
+        {% if daily_set %}
+            <!-- If we have recommendations, show them -->
+            <div class="space-y-8">
+                <!-- Poem Card -->
+                <div class="reading-card poem bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1.586l-4 4z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Poem</h2>
+                                <span class="text-sm text-green-600 font-medium">5 minutes to read</span>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
+                            "The Road Not Taken"
+                        </h3>
+                        <p class="text-gray-600 mb-1">by Robert Frost</p>
+                        <p class="text-gray-500 text-sm italic mb-4">
+                            Why chosen: Your love for reflective literature and interest in life's pivotal moments
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            One of Frost's most beloved poems about choices and their consequences. This piece explores the paths we take in life and how they shape our destiny, perfect for contemplating life's bigger decisions.
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            Read Now
+                        </a>
+                        <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
+                            Save for Later
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Short Story Card -->
+                <div class="reading-card story bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Story</h2>
+                                <span class="text-sm text-blue-600 font-medium">15 minutes to read</span>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
+                            "The Gift of the Magi"
+                        </h3>
+                        <p class="text-gray-600 mb-1">by O. Henry</p>
+                        <p class="text-gray-500 text-sm italic mb-4">
+                            Why chosen: Matches your preference for heartwarming stories with meaningful themes
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            A timeless tale of love and sacrifice that follows a young couple who each give up their most prized possession to buy a Christmas gift for the other. This beautiful story explores the true meaning of generosity and love.
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            Read Now
+                        </a>
+                        <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
+                            Save for Later
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Essay Card -->
+                <div class="reading-card essay bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Essay</h2>
+                                <span class="text-sm text-yellow-600 font-medium">12 minutes to read</span>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
+                            "Self-Reliance"
+                        </h3>
+                        <p class="text-gray-600 mb-1">by Ralph Waldo Emerson</p>
+                        <p class="text-gray-500 text-sm italic mb-4">
+                            Why chosen: Aligns with your interest in philosophical thinking and personal growth
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            Emerson's influential essay on individualism and trusting one's own instincts. This foundational piece of American transcendentalism encourages readers to think independently and follow their own path, regardless of society's expectations.
+                        </p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            Read Now
+                        </a>
+                        <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
+                            Save for Later
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Reflection -->
+            <div class="mt-12 bg-white rounded-2xl card-shadow p-8">
+                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-6 text-center">
+                    How was today's selection?
+                </h2>
+                <p class="text-gray-600 text-center mb-8">
+                    Your feedback helps us improve tomorrow's recommendations
+                </p>
+                
+                <div class="max-w-md mx-auto space-y-6">
+                    <!-- Overall Rating -->
+                    <div class="text-center">
+                        <div class="flex justify-center space-x-2 mb-4">
+                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </button>
+                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </button>
+                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </button>
+                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </button>
+                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500">Rate today's overall selection</p>
+                    </div>
+                    
+                    <!-- Feedback -->
+                    <div>
+                        <textarea placeholder="Any thoughts on today's recommendations? (optional)" 
+                                  rows="3" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"></textarea>
+                    </div>
+                    
+                    <button class="w-full btn-primary text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        Submit Feedback
+                    </button>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- No recommendations yet - show placeholder -->
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-4">
+                    Preparing Your Recommendations
+                </h2>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                    We're curating the perfect literary selections based on your preferences. Check back soon!
+                </p>
+                <button class="btn-primary text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                    Generate Today's Picks
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Star rating functionality
+document.querySelectorAll('.star').forEach((star, index) => {
+    star.addEventListener('click', () => {
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((s, i) => {
+            if (i <= index) {
+                s.classList.remove('text-gray-300');
+                s.classList.add('text-yellow-500');
+            } else {
+                s.classList.remove('text-yellow-500');
+                s.classList.add('text-gray-300');
+            }
+        });
+    });
+    
+    star.addEventListener('mouseenter', () => {
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((s, i) => {
+            if (i <= index) {
+                s.classList.add('text-yellow-400');
+            }
+        });
+    });
+    
+    star.addEventListener('mouseleave', () => {
+        document.querySelectorAll('.star').forEach(s => {
+            s.classList.remove('text-yellow-400');
+        });
+    });
+});
+</script>
+{% endblock %}

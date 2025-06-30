@@ -201,11 +201,6 @@ def daily_view():
     
     return render_template('daily.html', daily_set=daily_set)
 
-# Initialize database
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Personalize Your Experience - Literary Recommendations{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Progress Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
+                Let's Personalize Your Reading Journey
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Tell us about your preferences so we can curate the perfect daily recommendations for you.
+            </p>
+            
+            <!-- Progress Bar -->
+            <div class="mt-8 max-w-md mx-auto">
+                <div class="bg-gray-200 rounded-full h-2">
+                    <div class="btn-primary h-2 rounded-full transition-all duration-500" style="width: 33%"></div>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Step 1 of 3</p>
+            </div>
+        </div>
+
+        <!-- Onboarding Form -->
+        <div class="bg-white rounded-2xl card-shadow p-8 md:p-12">
+            <form id="onboardingForm" class="space-y-8">
+                <!-- Step 1: Favorite Books/Authors -->
+                <div id="step1" class="onboarding-step">
+                    <h2 class="text-2xl font-serif font-semibold text-gray-900 mb-6">
+                        📚 What are some of your favorite books or authors?
+                    </h2>
+                    <p class="text-gray-600 mb-6">
+                        This helps us understand your literary taste. Don't worry if you can't think of many!
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Favorite Books (one per line)
+                            </label>
+                            <textarea id="favoriteBooks" 
+                                      rows="4" 
+                                      class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      placeholder="e.g., To Kill a Mockingbird&#10;The Great Gatsby&#10;Pride and Prejudice"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Favorite Authors (one per line)
+                            </label>
+                            <textarea id="favoriteAuthors" 
+                                      rows="4" 
+                                      class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      placeholder="e.g., Maya Angelou&#10;Jorge Luis Borges&#10;Virginia Woolf"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Movies, Directors, or Artists You Enjoy
+                            </label>
+                            <textarea id="otherInterests" 
+                                      rows="3" 
+                                      class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                      placeholder="e.g., Wes Anderson films&#10;Van Gogh&#10;The Beatles"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Reading Preferences -->
+                <div id="step2" class="onboarding-step hidden">
+                    <h2 class="text-2xl font-serif font-semibold text-gray-900 mb-6">
+                        ⚙️ How do you like to read?
+                    </h2>
+                    
+                    <div class="space-y-8">
+                        <!-- Difficulty Preference -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Preferred Reading Difficulty
+                            </label>
+                            <div class="space-y-3">
+                                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="difficulty" value="beginner" class="text-purple-600 focus:ring-purple-500">
+                                    <div class="ml-3">
+                                        <div class="font-medium">Beginner</div>
+                                        <div class="text-sm text-gray-500">Easy to read, accessible language</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="difficulty" value="intermediate" class="text-purple-600 focus:ring-purple-500" checked>
+                                    <div class="ml-3">
+                                        <div class="font-medium">Intermediate</div>
+                                        <div class="text-sm text-gray-500">Mix of classic and contemporary works</div>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="difficulty" value="advanced" class="text-purple-600 focus:ring-purple-500">
+                                    <div class="ml-3">
+                                        <div class="font-medium">Advanced</div>
+                                        <div class="text-sm text-gray-500">Complex, challenging literature</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Adventurousness Scale -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                How adventurous are you with new genres and styles?
+                            </label>
+                            <div class="px-3">
+                                <input type="range" 
+                                       id="adventurousness" 
+                                       min="0" 
+                                       max="100" 
+                                       value="50" 
+                                       class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+                                <div class="flex justify-between text-sm text-gray-600 mt-2">
+                                    <span>Safe & Familiar</span>
+                                    <span>Love to Explore</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Length Preference -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Preferred Reading Length
+                            </label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <label class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="length" value="short" class="text-purple-600 focus:ring-purple-500 mb-2">
+                                    <div class="font-medium">Short</div>
+                                    <div class="text-xs text-gray-500 text-center">5-10 minutes</div>
+                                </label>
+                                <label class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="length" value="medium" class="text-purple-600 focus:ring-purple-500 mb-2" checked>
+                                    <div class="font-medium">Medium</div>
+                                    <div class="text-xs text-gray-500 text-center">10-20 minutes</div>
+                                </label>
+                                <label class="flex flex-col items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="radio" name="length" value="long" class="text-purple-600 focus:ring-purple-500 mb-2">
+                                    <div class="font-medium">Long</div>
+                                    <div class="text-xs text-gray-500 text-center">20+ minutes</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Topics to Avoid -->
+                <div id="step3" class="onboarding-step hidden">
+                    <h2 class="text-2xl font-serif font-semibold text-gray-900 mb-6">
+                        🚫 Any topics you'd prefer to avoid?
+                    </h2>
+                    <p class="text-gray-600 mb-6">
+                        We want your reading experience to be enjoyable. Let us know if there are any themes or subjects you'd rather skip.
+                    </p>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Topics to Avoid (optional)
+                        </label>
+                        <textarea id="avoidTopics" 
+                                  rows="4" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="e.g., violence&#10;horror&#10;explicit content"></textarea>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Leave blank if you're open to all content types.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between pt-8 border-t border-gray-200">
+                    <button type="button" 
+                            id="prevBtn" 
+                            class="hidden px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200">
+                        Previous
+                    </button>
+                    <div class="flex-1"></div>
+                    <button type="button" 
+                            id="nextBtn" 
+                            class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        Next
+                    </button>
+                    <button type="submit" 
+                            id="submitBtn" 
+                            class="hidden btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        Complete Setup
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Onboarding flow logic
+let currentStep = 1;
+const totalSteps = 3;
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.onboarding-step').forEach(el => el.classList.add('hidden'));
+    
+    // Show current step
+    document.getElementById(`step${step}`).classList.remove('hidden');
+    
+    // Update progress bar
+    const progress = (step / totalSteps) * 100;
+    document.querySelector('.btn-primary').style.width = progress + '%';
+    document.querySelector('.mt-2').textContent = `Step ${step} of ${totalSteps}`;
+    
+    // Update buttons
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (step === 1) {
+        prevBtn.classList.add('hidden');
+    } else {
+        prevBtn.classList.remove('hidden');
+    }
+    
+    if (step === totalSteps) {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+    } else {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+    }
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentStep < totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+    }
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+    }
+});
+
+// Form submission
+document.getElementById('onboardingForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    // Collect form data
+    const formData = {
+        favoriteBooks: document.getElementById('favoriteBooks').value,
+        favoriteAuthors: document.getElementById('favoriteAuthors').value,
+        otherInterests: document.getElementById('otherInterests').value,
+        difficulty: document.querySelector('input[name="difficulty"]:checked').value,
+        adventurousness: document.getElementById('adventurousness').value / 100,
+        length: document.querySelector('input[name="length"]:checked').value,
+        avoidTopics: document.getElementById('avoidTopics').value
+    };
+    
+    // For now, just redirect to daily view
+    // In production, you'd send this data to your Flask backend
+    alert('Setup complete! Redirecting to your daily recommendations...');
+    window.location.href = "{{ url_for('daily_view') }}";
+});
+</script>
+{% endblock %}
