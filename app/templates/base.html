@@ -55,11 +55,11 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-8">
-                    <a href="{{ url_for('daily_view') }}" class="text-xl font-serif font-semibold text-gray-900">
+                    <a href="{{ url_for('routes.daily_view') }}" class="text-xl font-serif font-semibold text-gray-900">
                         Literary Recommendations
                     </a>
                     <div class="hidden md:flex space-x-6">
-                        <a href="{{ url_for('daily_view') }}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+                        <a href="{{ url_for('routes.daily_view') }}" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
                             Today
                         </a>
                         <a href="#" class="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
@@ -72,7 +72,7 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-600">{{ current_user.username }}</span>
-                    <a href="{{ url_for('logout') }}" class="text-sm text-gray-500 hover:text-gray-700">
+                    <a href="{{ url_for('routes.logout') }}" class="text-sm text-gray-500 hover:text-gray-700">
                         Logout
                     </a>
                 </div>

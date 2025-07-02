@@ -263,10 +263,16 @@ document.getElementById('onboardingForm').addEventListener('submit', (e) => {
         avoidTopics: document.getElementById('avoidTopics').value
     };
     
-    // For now, just redirect to daily view
-    // In production, you'd send this data to your Flask backend
-    alert('Setup complete! Redirecting to your daily recommendations...');
-    window.location.href = "{{ url_for('daily_view') }}";
+    // When the last step is reached and the "Complete" button is clicked
+    if (currentStep === totalSteps - 1) {
+        // Here you would typically submit the form data to the server
+        console.log('Onboarding complete!');
+        
+        // For this example, we'll just redirect
+        window.location.href = "{{ url_for('routes.daily_view') }}";
+    } else {
+        showStep(currentStep + 1);
+    }
 });
 </script>
 {% endblock %}

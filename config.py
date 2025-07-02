@@ -1,25 +1,20 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///literary_recommendations.db'
+    """Base configuration."""
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key-here-change-me')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # LLM API Configuration (for later)
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY')
-
-class DevelopmentConfig(Config):
-    DEBUG = True
 
 class ProductionConfig(Config):
-    DEBUG = False
+    """Production configuration."""
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
-config = {
-    'development': DevelopmentConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig
-}
+class DevelopmentConfig(Config):
+    """Development configuration."""
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///../instance/literary_recommendations.db'
+    DEBUG = True
+
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:' 
