@@ -1,6 +1,6 @@
 from . import db, login_manager
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Database Models
 class User(UserMixin, db.Model):
@@ -8,7 +8,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     onboarding_completed = db.Column(db.Boolean, default=False)
     adventurousness_level = db.Column(db.Float, default=0.5)  # 0-1 scale
     difficulty_preference = db.Column(db.String(20), default='intermediate')  # beginner/intermediate/advanced
@@ -27,7 +27,7 @@ class UserPreference(db.Model):
     preference_type = db.Column(db.String(50), nullable=False)  # book/author/movie/director/artist/genre/topic
     preference_value = db.Column(db.String(200), nullable=False)
     weight = db.Column(db.Float, default=1.0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     active = db.Column(db.Boolean, default=True)
 
 class Work(db.Model):
@@ -44,7 +44,7 @@ class Work(db.Model):
     publication_year = db.Column(db.Integer)
     public_domain = db.Column(db.Boolean, default=True)
     word_count = db.Column(db.Integer)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     active = db.Column(db.Boolean, default=True)
     
     # Relationships
@@ -59,7 +59,7 @@ class UserWorkPool(db.Model):
     confidence_score = db.Column(db.Float, nullable=False)  # 0-1 scale
     added_reason = db.Column(db.Text)
     status = db.Column(db.String(20), default='available')  # available/recommended/exhausted
-    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+    added_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     last_recommended_at = db.Column(db.DateTime)
     times_recommended = db.Column(db.Integer, default=0)
     active = db.Column(db.Boolean, default=True)
@@ -73,10 +73,10 @@ class WorkRecommendation(db.Model):
     status = db.Column(db.String(20), default='unread')  # unread/in_progress/completed
     rating = db.Column(db.Integer)  # 1-5, nullable until completed
     feedback = db.Column(db.Text)
-    recommended_at = db.Column(db.DateTime, default=datetime.utcnow)
+    recommended_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 class DailyRecommendationSet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -88,7 +88,7 @@ class DailyRecommendationSet(db.Model):
     overall_rating = db.Column(db.Integer)  # 1-5
     overall_feedback = db.Column(db.Text)
     completed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     
     # Relationships to the individual recommendations
     poem_rec = db.relationship('WorkRecommendation', foreign_keys=[poem_recommendation_id])

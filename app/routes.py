@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 from .models import User, DailyRecommendationSet
 from . import db
-from datetime import date
+from datetime import date, datetime
 
 bp = Blueprint('routes', __name__, template_folder='templates')
 
@@ -89,4 +89,16 @@ def daily_view():
         date=today
     ).first()
     
-    return render_template('daily.html', daily_set=daily_set)
+    return render_template('daily.html', daily_set=daily_set, datetime=datetime)
+
+@bp.route('/daily-test')
+@login_required
+def daily_view_test():
+    """Temporary route to test daily template without onboarding requirement"""
+    today = date.today()
+    daily_set = DailyRecommendationSet.query.filter_by(
+        user_id=current_user.id,
+        date=today
+    ).first()
+    
+    return render_template('daily.html', daily_set=daily_set, datetime=datetime)
