@@ -22,10 +22,11 @@
         </div>
 
         <!-- Daily Recommendations -->
-        {% if daily_set %}
+        {% if recommendations and (recommendations.poem or recommendations.story or recommendations.essay) %}
             <!-- If we have recommendations, show them -->
             <div class="space-y-8">
                 <!-- Poem Card -->
+                {% if recommendations.poem %}
                 <div class="reading-card poem bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center">
@@ -36,36 +37,74 @@
                             </div>
                             <div>
                                 <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Poem</h2>
-                                <span class="text-sm text-green-600 font-medium">5 minutes to read</span>
+                                <span class="text-sm text-green-600 font-medium">
+                                    {% if recommendations.poem.work.estimated_reading_time %}
+                                        {{ recommendations.poem.work.estimated_reading_time }} minutes to read
+                                    {% else %}
+                                        5 minutes to read
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm capitalize">{{ recommendations.poem.status }}</span>
                     </div>
                     
                     <div class="mb-6">
                         <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
-                            "The Road Not Taken"
+                            "{{ recommendations.poem.work.title }}"
                         </h3>
-                        <p class="text-gray-600 mb-1">by Robert Frost</p>
+                        <p class="text-gray-600 mb-1">by {{ recommendations.poem.work.author }}</p>
+                        {% if recommendations.poem.reasoning %}
                         <p class="text-gray-500 text-sm italic mb-4">
-                            Why chosen: Your love for reflective literature and interest in life's pivotal moments
+                            Why chosen: {{ recommendations.poem.reasoning }}
                         </p>
+                        {% endif %}
+                        {% if recommendations.poem.work.summary %}
                         <p class="text-gray-700 leading-relaxed">
-                            One of Frost's most beloved poems about choices and their consequences. This piece explores the paths we take in life and how they shape our destiny, perfect for contemplating life's bigger decisions.
+                            {{ recommendations.poem.work.summary }}
                         </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Individual Rating -->
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Rate this poem:</span>
+                            <div class="flex space-x-1" data-rec-id="{{ recommendations.poem.id }}">
+                                {% for i in range(1, 6) %}
+                                <button class="rating-star w-5 h-5 {% if recommendations.poem.rating and i <= recommendations.poem.rating %}text-yellow-500{% else %}text-gray-300{% endif %} hover:text-yellow-400 transition-colors duration-200" 
+                                        data-rating="{{ i }}">
+                                    <svg fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {% if recommendations.poem.rating %}
+                            <span class="text-sm text-gray-500">({{ recommendations.poem.rating }}/5)</span>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="flex space-x-4">
-                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        {% if recommendations.poem.work.content_url %}
+                        <a href="{{ recommendations.poem.work.content_url }}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
                             Read Now
                         </a>
+                        {% else %}
+                        <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300" disabled>
+                            Coming Soon
+                        </button>
+                        {% endif %}
                         <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
                             Save for Later
                         </button>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Short Story Card -->
+                {% if recommendations.story %}
                 <div class="reading-card story bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center">
@@ -76,36 +115,74 @@
                             </div>
                             <div>
                                 <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Story</h2>
-                                <span class="text-sm text-blue-600 font-medium">15 minutes to read</span>
+                                <span class="text-sm text-blue-600 font-medium">
+                                    {% if recommendations.story.work.estimated_reading_time %}
+                                        {{ recommendations.story.work.estimated_reading_time }} minutes to read
+                                    {% else %}
+                                        15 minutes to read
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm capitalize">{{ recommendations.story.status }}</span>
                     </div>
                     
                     <div class="mb-6">
                         <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
-                            "The Gift of the Magi"
+                            "{{ recommendations.story.work.title }}"
                         </h3>
-                        <p class="text-gray-600 mb-1">by O. Henry</p>
+                        <p class="text-gray-600 mb-1">by {{ recommendations.story.work.author }}</p>
+                        {% if recommendations.story.reasoning %}
                         <p class="text-gray-500 text-sm italic mb-4">
-                            Why chosen: Matches your preference for heartwarming stories with meaningful themes
+                            Why chosen: {{ recommendations.story.reasoning }}
                         </p>
+                        {% endif %}
+                        {% if recommendations.story.work.summary %}
                         <p class="text-gray-700 leading-relaxed">
-                            A timeless tale of love and sacrifice that follows a young couple who each give up their most prized possession to buy a Christmas gift for the other. This beautiful story explores the true meaning of generosity and love.
+                            {{ recommendations.story.work.summary }}
                         </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Individual Rating -->
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Rate this story:</span>
+                            <div class="flex space-x-1" data-rec-id="{{ recommendations.story.id }}">
+                                {% for i in range(1, 6) %}
+                                <button class="rating-star w-5 h-5 {% if recommendations.story.rating and i <= recommendations.story.rating %}text-yellow-500{% else %}text-gray-300{% endif %} hover:text-yellow-400 transition-colors duration-200" 
+                                        data-rating="{{ i }}">
+                                    <svg fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {% if recommendations.story.rating %}
+                            <span class="text-sm text-gray-500">({{ recommendations.story.rating }}/5)</span>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="flex space-x-4">
-                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        {% if recommendations.story.work.content_url %}
+                        <a href="{{ recommendations.story.work.content_url }}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
                             Read Now
                         </a>
+                        {% else %}
+                        <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300" disabled>
+                            Coming Soon
+                        </button>
+                        {% endif %}
                         <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
                             Save for Later
                         </button>
                     </div>
                 </div>
+                {% endif %}
 
                 <!-- Essay Card -->
+                {% if recommendations.essay %}
                 <div class="reading-card essay bg-white rounded-2xl card-shadow p-8 hover:shadow-xl transition-all duration-300">
                     <div class="flex items-start justify-between mb-6">
                         <div class="flex items-center">
@@ -116,90 +193,73 @@
                             </div>
                             <div>
                                 <h2 class="text-2xl font-serif font-bold text-gray-900">Today's Essay</h2>
-                                <span class="text-sm text-yellow-600 font-medium">12 minutes to read</span>
+                                <span class="text-sm text-yellow-600 font-medium">
+                                    {% if recommendations.essay.work.estimated_reading_time %}
+                                        {{ recommendations.essay.work.estimated_reading_time }} minutes to read
+                                    {% else %}
+                                        12 minutes to read
+                                    {% endif %}
+                                </span>
                             </div>
                         </div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">Unread</span>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm capitalize">{{ recommendations.essay.status }}</span>
                     </div>
                     
                     <div class="mb-6">
                         <h3 class="text-xl font-serif font-semibold text-gray-800 mb-2">
-                            "Self-Reliance"
+                            "{{ recommendations.essay.work.title }}"
                         </h3>
-                        <p class="text-gray-600 mb-1">by Ralph Waldo Emerson</p>
+                        <p class="text-gray-600 mb-1">by {{ recommendations.essay.work.author }}</p>
+                        {% if recommendations.essay.reasoning %}
                         <p class="text-gray-500 text-sm italic mb-4">
-                            Why chosen: Aligns with your interest in philosophical thinking and personal growth
+                            Why chosen: {{ recommendations.essay.reasoning }}
                         </p>
+                        {% endif %}
+                        {% if recommendations.essay.work.summary %}
                         <p class="text-gray-700 leading-relaxed">
-                            Emerson's influential essay on individualism and trusting one's own instincts. This foundational piece of American transcendentalism encourages readers to think independently and follow their own path, regardless of society's expectations.
+                            {{ recommendations.essay.work.summary }}
                         </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Individual Rating -->
+                    <div class="mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-600">Rate this essay:</span>
+                            <div class="flex space-x-1" data-rec-id="{{ recommendations.essay.id }}">
+                                {% for i in range(1, 6) %}
+                                <button class="rating-star w-5 h-5 {% if recommendations.essay.rating and i <= recommendations.essay.rating %}text-yellow-500{% else %}text-gray-300{% endif %} hover:text-yellow-400 transition-colors duration-200" 
+                                        data-rating="{{ i }}">
+                                    <svg fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </button>
+                                {% endfor %}
+                            </div>
+                            {% if recommendations.essay.rating %}
+                            <span class="text-sm text-gray-500">({{ recommendations.essay.rating }}/5)</span>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="flex space-x-4">
-                        <a href="#" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                        {% if recommendations.essay.work.content_url %}
+                        <a href="{{ recommendations.essay.work.content_url }}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
                             Read Now
                         </a>
+                        {% else %}
+                        <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300" disabled>
+                            Coming Soon
+                        </button>
+                        {% endif %}
                         <button class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
                             Save for Later
                         </button>
                     </div>
                 </div>
+                {% endif %}
             </div>
 
-            <!-- Daily Reflection -->
-            <div class="mt-12 bg-white rounded-2xl card-shadow p-8">
-                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-6 text-center">
-                    How was today's selection?
-                </h2>
-                <p class="text-gray-600 text-center mb-8">
-                    Your feedback helps us improve tomorrow's recommendations
-                </p>
-                
-                <div class="max-w-md mx-auto space-y-6">
-                    <!-- Overall Rating -->
-                    <div class="text-center">
-                        <div class="flex justify-center space-x-2 mb-4">
-                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                            <button class="star w-8 h-8 text-gray-300 hover:text-yellow-500 transition-colors duration-200">
-                                <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <p class="text-sm text-gray-500">Rate today's overall selection</p>
-                    </div>
-                    
-                    <!-- Feedback -->
-                    <div>
-                        <textarea placeholder="Any thoughts on today's recommendations? (optional)" 
-                                  rows="3" 
-                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"></textarea>
-                    </div>
-                    
-                    <button class="w-full btn-primary text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
-                        Submit Feedback
-                    </button>
-                </div>
-            </div>
 
         {% else %}
             <!-- No recommendations yet - show placeholder -->
@@ -224,35 +284,62 @@
 </div>
 
 <script>
-// Star rating functionality
-document.querySelectorAll('.star').forEach((star, index) => {
-    star.addEventListener('click', () => {
-        const stars = document.querySelectorAll('.star');
-        stars.forEach((s, i) => {
-            if (i <= index) {
-                s.classList.remove('text-gray-300');
-                s.classList.add('text-yellow-500');
+// Individual recommendation rating functionality
+document.querySelectorAll('.rating-star').forEach(star => {
+    star.addEventListener('click', async () => {
+        const rating = parseInt(star.dataset.rating);
+        const recContainer = star.closest('[data-rec-id]');
+        const recId = recContainer.dataset.recId;
+        
+        try {
+            const response = await fetch('{{ url_for("routes.rate_recommendation") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recommendation_id: recId,
+                    rating: rating
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update star display
+                const stars = recContainer.querySelectorAll('.rating-star');
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.remove('text-gray-300');
+                        s.classList.add('text-yellow-500');
+                    } else {
+                        s.classList.remove('text-yellow-500');
+                        s.classList.add('text-gray-300');
+                    }
+                });
+                
+                // Update rating display if it exists
+                const ratingDisplay = recContainer.parentElement.querySelector('.text-gray-500');
+                if (ratingDisplay && ratingDisplay.textContent.includes('/5')) {
+                    ratingDisplay.textContent = `(${rating}/5)`;
+                } else if (!ratingDisplay) {
+                    // Add rating display if it doesn't exist
+                    const ratingSpan = document.createElement('span');
+                    ratingSpan.className = 'text-sm text-gray-500';
+                    ratingSpan.textContent = `(${rating}/5)`;
+                    recContainer.parentElement.appendChild(ratingSpan);
+                }
+                
+                console.log('Rating saved successfully');
             } else {
-                s.classList.remove('text-yellow-500');
-                s.classList.add('text-gray-300');
+                alert('Error saving rating: ' + (result.error || 'Unknown error'));
             }
-        });
-    });
-    
-    star.addEventListener('mouseenter', () => {
-        const stars = document.querySelectorAll('.star');
-        stars.forEach((s, i) => {
-            if (i <= index) {
-                s.classList.add('text-yellow-400');
-            }
-        });
-    });
-    
-    star.addEventListener('mouseleave', () => {
-        document.querySelectorAll('.star').forEach(s => {
-            s.classList.remove('text-yellow-400');
-        });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving rating. Please try again.');
+        }
     });
 });
+
 </script>
 {% endblock %}

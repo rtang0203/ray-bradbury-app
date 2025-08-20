@@ -13,13 +13,13 @@ class User(UserMixin, db.Model):
     adventurousness_level = db.Column(db.Float, default=0.5)  # 0-1 scale
     difficulty_preference = db.Column(db.String(20), default='intermediate')  # beginner/intermediate/advanced
     preferred_length = db.Column(db.String(20), default='medium')  # short/medium/long
+    preference_summary = db.Column(db.Text)  # LLM-friendly summary of all preferences
     active = db.Column(db.Boolean, default=True)
     
     # Relationships
     preferences = db.relationship('UserPreference', backref='user', lazy=True)
     work_pools = db.relationship('UserWorkPool', backref='user', lazy=True)
     work_recommendations = db.relationship('WorkRecommendation', backref='user', lazy=True)
-    daily_sets = db.relationship('DailyRecommendationSet', backref='user', lazy=True)
 
 class UserPreference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -68,6 +68,7 @@ class WorkRecommendation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     work_id = db.Column(db.Integer, db.ForeignKey('work.id'), nullable=False)
+    work_type = db.Column(db.String(20), nullable=False)  # poem/short_story/essay
     date = db.Column(db.Date, nullable=False)
     reasoning = db.Column(db.Text)
     status = db.Column(db.String(20), default='unread')  # unread/in_progress/completed
@@ -78,22 +79,6 @@ class WorkRecommendation(db.Model):
     completed_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-class DailyRecommendationSet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date = db.Column(db.Date, nullable=False)
-    poem_recommendation_id = db.Column(db.Integer, db.ForeignKey('work_recommendation.id'))
-    story_recommendation_id = db.Column(db.Integer, db.ForeignKey('work_recommendation.id'))
-    essay_recommendation_id = db.Column(db.Integer, db.ForeignKey('work_recommendation.id'))
-    overall_rating = db.Column(db.Integer)  # 1-5
-    overall_feedback = db.Column(db.Text)
-    completed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    
-    # Relationships to the individual recommendations
-    poem_rec = db.relationship('WorkRecommendation', foreign_keys=[poem_recommendation_id])
-    story_rec = db.relationship('WorkRecommendation', foreign_keys=[story_recommendation_id])
-    essay_rec = db.relationship('WorkRecommendation', foreign_keys=[essay_recommendation_id])
 
 # Flask-Login user loader
 @login_manager.user_loader

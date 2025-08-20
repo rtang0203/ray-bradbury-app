@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Your Profile - Literary Recommendations{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">
+                Your Reading Profile
+            </h1>
+            <p class="text-lg text-gray-600">
+                Update your preferences to get better recommendations
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Current Preferences Summary -->
+            <div class="bg-white rounded-2xl card-shadow p-8">
+                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-6">
+                    Current Preferences
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Reading Level:</span>
+                        <p class="text-gray-900 capitalize">{{ current_user.difficulty_preference }}</p>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Preferred Length:</span>
+                        <p class="text-gray-900 capitalize">{{ current_user.preferred_length }}</p>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Adventurousness:</span>
+                        <div class="flex items-center">
+                            <div class="w-32 bg-gray-200 rounded-full h-2 mr-3">
+                                <div class="btn-primary h-2 rounded-full" style="width: {{ (current_user.adventurousness_level * 100)|round }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">{{ (current_user.adventurousness_level * 100)|round }}%</span>
+                        </div>
+                    </div>
+                    
+                    {% if current_user.preference_summary %}
+                    <div>
+                        <span class="text-sm font-medium text-gray-500">Summary:</span>
+                        <p class="text-gray-700 leading-relaxed">{{ current_user.preference_summary }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button onclick="showEditForm()" class="mt-6 btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                    Edit Preferences
+                </button>
+            </div>
+
+            <!-- Edit Form (initially hidden) -->
+            <div id="editForm" class="bg-white rounded-2xl card-shadow p-8 hidden">
+                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-6">
+                    Update Preferences
+                </h2>
+                
+                <form id="profileForm" class="space-y-6">
+                    <!-- Basic Settings -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Reading Difficulty</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="difficulty" value="beginner" class="text-purple-600 focus:ring-purple-500" {% if current_user.difficulty_preference == 'beginner' %}checked{% endif %}>
+                                <span class="ml-2">Beginner</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="difficulty" value="intermediate" class="text-purple-600 focus:ring-purple-500" {% if current_user.difficulty_preference == 'intermediate' %}checked{% endif %}>
+                                <span class="ml-2">Intermediate</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="difficulty" value="advanced" class="text-purple-600 focus:ring-purple-500" {% if current_user.difficulty_preference == 'advanced' %}checked{% endif %}>
+                                <span class="ml-2">Advanced</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Preferred Length</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="length" value="short" class="text-purple-600 focus:ring-purple-500 mb-1" {% if current_user.preferred_length == 'short' %}checked{% endif %}>
+                                <span class="text-sm">Short</span>
+                            </label>
+                            <label class="flex flex-col items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="length" value="medium" class="text-purple-600 focus:ring-purple-500 mb-1" {% if current_user.preferred_length == 'medium' %}checked{% endif %}>
+                                <span class="text-sm">Medium</span>
+                            </label>
+                            <label class="flex flex-col items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="length" value="long" class="text-purple-600 focus:ring-purple-500 mb-1" {% if current_user.preferred_length == 'long' %}checked{% endif %}>
+                                <span class="text-sm">Long</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Adventurousness: <span id="adventurenessValue">{{ (current_user.adventurousness_level * 100)|round }}%</span>
+                        </label>
+                        <input type="range" 
+                               id="adventurousness" 
+                               min="0" 
+                               max="100" 
+                               value="{{ (current_user.adventurousness_level * 100)|round }}" 
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                               oninput="document.getElementById('adventurenessValue').textContent = this.value + '%'">
+                    </div>
+
+                    <!-- Detailed Preferences -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Favorite Books</label>
+                        <textarea id="favoriteBooks" 
+                                  rows="3" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="One per line...">{% for pref in book_preferences %}{{ pref.preference_value }}
+{% endfor %}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Favorite Authors</label>
+                        <textarea id="favoriteAuthors" 
+                                  rows="3" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="One per line...">{% for pref in author_preferences %}{{ pref.preference_value }}
+{% endfor %}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Other Interests</label>
+                        <textarea id="otherInterests" 
+                                  rows="3" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="Movies, directors, artists...">{% for pref in interest_preferences %}{{ pref.preference_value }}
+{% endfor %}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Topics to Avoid</label>
+                        <textarea id="avoidTopics" 
+                                  rows="2" 
+                                  class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="Optional...">{% for pref in avoid_preferences %}{{ pref.preference_value }}
+{% endfor %}</textarea>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="btn-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            Save Changes
+                        </button>
+                        <button type="button" onclick="hideEditForm()" class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Reading Stats -->
+            <div class="bg-white rounded-2xl card-shadow p-8">
+                <h2 class="text-2xl font-serif font-bold text-gray-900 mb-6">
+                    Reading Statistics
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Total Recommendations:</span>
+                        <span class="font-semibold">{{ total_recommendations }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Completed:</span>
+                        <span class="font-semibold">{{ completed_recommendations }}</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Average Rating:</span>
+                        <span class="font-semibold">
+                            {% if average_rating %}
+                                {{ "%.1f"|format(average_rating) }}/5 ⭐
+                            {% else %}
+                                Not yet rated
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Days Active:</span>
+                        <span class="font-semibold">{{ days_active }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showEditForm() {
+    document.getElementById('editForm').classList.remove('hidden');
+}
+
+function hideEditForm() {
+    document.getElementById('editForm').classList.add('hidden');
+}
+
+// Form submission
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        favoriteBooks: document.getElementById('favoriteBooks').value,
+        favoriteAuthors: document.getElementById('favoriteAuthors').value,
+        otherInterests: document.getElementById('otherInterests').value,
+        difficulty: document.querySelector('input[name="difficulty"]:checked').value,
+        adventurousness: document.getElementById('adventurousness').value,
+        length: document.querySelector('input[name="length"]:checked').value,
+        avoidTopics: document.getElementById('avoidTopics').value
+    };
+    
+    try {
+        const response = await fetch('{{ url_for("routes.profile") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            location.reload(); // Refresh page to show updated preferences
+        } else {
+            alert('Error updating preferences: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error updating preferences. Please try again.');
+    }
+});
+</script>
+{% endblock %}

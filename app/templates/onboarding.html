@@ -249,8 +249,15 @@ document.getElementById('prevBtn').addEventListener('click', () => {
 });
 
 // Form submission
-document.getElementById('onboardingForm').addEventListener('submit', (e) => {
+document.getElementById('onboardingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Only process submission on the last step
+    if (currentStep !== totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+        return;
+    }
     
     // Collect form data
     const formData = {
@@ -258,20 +265,42 @@ document.getElementById('onboardingForm').addEventListener('submit', (e) => {
         favoriteAuthors: document.getElementById('favoriteAuthors').value,
         otherInterests: document.getElementById('otherInterests').value,
         difficulty: document.querySelector('input[name="difficulty"]:checked').value,
-        adventurousness: document.getElementById('adventurousness').value / 100,
+        adventurousness: document.getElementById('adventurousness').value,
         length: document.querySelector('input[name="length"]:checked').value,
         avoidTopics: document.getElementById('avoidTopics').value
     };
     
-    // When the last step is reached and the "Complete" button is clicked
-    if (currentStep === totalSteps - 1) {
-        // Here you would typically submit the form data to the server
-        console.log('Onboarding complete!');
+    // Disable submit button during processing
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        // Submit to backend
+        const response = await fetch('{{ url_for("routes.onboarding") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
         
-        // For this example, we'll just redirect
-        window.location.href = "{{ url_for('routes.daily_view') }}";
-    } else {
-        showStep(currentStep + 1);
+        const result = await response.json();
+        
+        if (result.success) {
+            // Redirect to daily view
+            window.location.href = result.redirect;
+        } else {
+            throw new Error(result.error || 'Failed to save preferences');
+        }
+    } catch (error) {
+        console.error('Error saving preferences:', error);
+        alert('Error saving preferences. Please try again.');
+        
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 });
 </script>
