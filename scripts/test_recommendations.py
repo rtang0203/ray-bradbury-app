@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
 from app.models import User, Work, UserWorkPool, DailyRecommendationSet, WorkRecommendation
-from app.recommendations import populate_user_work_pool, generate_daily_recommendations
+from app.recommendations import populate_user_work_pool, get_daily_recommendations
 from datetime import date
 
 def main():
@@ -97,7 +97,7 @@ def main():
         else:
             print(f"   No recommendations for {today}. Generating...")
             try:
-                daily_set = generate_daily_recommendations(user.id, today)
+                daily_set = get_daily_recommendations(user.id, today, regenerate=True)
                 if daily_set:
                     print(f"   ✓ Generated recommendations for {today}")
                     print(f"   Poem: {daily_set.poem_rec.work.title} by {daily_set.poem_rec.work.author}")

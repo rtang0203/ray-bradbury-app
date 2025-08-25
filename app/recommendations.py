@@ -3,6 +3,7 @@ from sqlalchemy import and_, or_
 from .models import (
     User, Work, UserWorkPool, WorkRecommendation, db
 )
+from .embeddings_engine import EmbeddingRecommendationEngine
 
 def generate_daily_recommendation(user_id, work_type, target_date=None):
     """
@@ -63,16 +64,17 @@ def generate_daily_recommendation(user_id, work_type, target_date=None):
         db.session.rollback()
         raise e
 
-def generate_daily_recommendations(user_id, target_date=None):
+def get_daily_recommendations(user_id, target_date=None, regenerate=False):
     """
-    Generate all three daily recommendations (poem, story, essay) for a user.
+    Get or generate all three daily recommendations (poem, story, essay) for a user.
     
     Args:
         user_id: The ID of the user
-        target_date: The date to generate recommendations for (defaults to today)
+        target_date: The date to get recommendations for (defaults to today)
+        regenerate: If True, always generate new recommendations. If False, use existing ones if available.
     
     Returns:
-        dict with keys 'poem', 'story', 'essay' containing WorkRecommendation objects
+        dict with keys 'poem', 'short_story', 'essay' containing WorkRecommendation objects
     """
     if target_date is None:
         target_date = date.today()
@@ -80,8 +82,22 @@ def generate_daily_recommendations(user_id, target_date=None):
     recommendations = {}
     
     for work_type in ['poem', 'short_story', 'essay']:
-        rec = generate_daily_recommendation(user_id, work_type, target_date)
-        recommendations[work_type] = rec
+        existing_rec = None
+        
+        if not regenerate:
+            # Check for existing recommendation
+            existing_rec = WorkRecommendation.query.filter_by(
+                user_id=user_id,
+                work_type=work_type,
+                date=target_date
+            ).first()
+        
+        if existing_rec:
+            recommendations[work_type] = existing_rec
+        else:
+            # Generate new recommendation
+            rec = generate_daily_recommendation(user_id, work_type, target_date)
+            recommendations[work_type] = rec
     
     return recommendations
 
@@ -122,8 +138,40 @@ def _mark_works_as_recommended(work_pool_entries):
 
 def populate_user_work_pool(user_id):
     """
-    Populate a user's work pool with initial recommendations.
-    This is a basic implementation that will later be enhanced with LLM integration.
+    Populate a user's work pool using the embedding-based recommendation engine.
+    """
+    user = User.query.get(user_id)
+    if not user:
+        return False
+    
+    if not user.embedding_vector:
+        # Fallback to basic algorithm if no embedding vector for user exists
+        return _populate_user_work_pool_basic(user_id)
+    
+    try:
+        # Clear existing pool
+        UserWorkPool.query.filter_by(user_id=user_id).delete()
+        
+        # Use embedding engine for intelligent recommendations
+        engine = EmbeddingRecommendationEngine()
+        engine.populate_user_work_pool(user_id)
+        
+        return True
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error in embedding-based pool population: {e}")
+        # Fallback to basic algorithm on error
+        try:
+            return _populate_user_work_pool_basic(user_id)
+        except Exception as fallback_error:
+            print(f"Fallback algorithm also failed: {fallback_error}")
+            raise e
+
+def _populate_user_work_pool_basic(user_id):
+    """
+    Basic fallback implementation for populating user's work pool.
+    Used when embedding engine is unavailable or user lacks preference summary.
     """
     user = User.query.get(user_id)
     if not user:
@@ -134,54 +182,45 @@ def populate_user_work_pool(user_id):
     stories = Work.query.filter_by(work_type='short_story', active=True).all()
     essays = Work.query.filter_by(work_type='essay', active=True).all()
     
-    # Basic scoring based on user preferences
-    try:
-        # Clear existing pool
-        UserWorkPool.query.filter_by(user_id=user_id).delete()
-        
-        # Add works with basic confidence scoring
-        for work in poems:
-            confidence = _calculate_basic_confidence(user, work)
-            if confidence > 0.3:  # Only add if confidence is above threshold
-                pool_entry = UserWorkPool(
-                    user_id=user_id,
-                    work_id=work.id,
-                    work_type='poem',
-                    confidence_score=confidence,
-                    added_reason="Basic algorithm match"
-                )
-                db.session.add(pool_entry)
-        
-        for work in stories:
-            confidence = _calculate_basic_confidence(user, work)
-            if confidence > 0.3:
-                pool_entry = UserWorkPool(
-                    user_id=user_id,
-                    work_id=work.id,
-                    work_type='short_story',
-                    confidence_score=confidence,
-                    added_reason="Basic algorithm match"
-                )
-                db.session.add(pool_entry)
-        
-        for work in essays:
-            confidence = _calculate_basic_confidence(user, work)
-            if confidence > 0.3:
-                pool_entry = UserWorkPool(
-                    user_id=user_id,
-                    work_id=work.id,
-                    work_type='essay',
-                    confidence_score=confidence,
-                    added_reason="Basic algorithm match"
-                )
-                db.session.add(pool_entry)
-        
-        db.session.commit()
-        return True
-        
-    except Exception as e:
-        db.session.rollback()
-        raise e
+    # Add works with basic confidence scoring
+    for work in poems:
+        confidence = _calculate_basic_confidence(user, work)
+        if confidence > 0.3:  # Only add if confidence is above threshold
+            pool_entry = UserWorkPool(
+                user_id=user_id,
+                work_id=work.id,
+                work_type='poem',
+                confidence_score=confidence,
+                added_reason="Basic algorithm match"
+            )
+            db.session.add(pool_entry)
+    
+    for work in stories:
+        confidence = _calculate_basic_confidence(user, work)
+        if confidence > 0.3:
+            pool_entry = UserWorkPool(
+                user_id=user_id,
+                work_id=work.id,
+                work_type='short_story',
+                confidence_score=confidence,
+                added_reason="Basic algorithm match"
+            )
+            db.session.add(pool_entry)
+    
+    for work in essays:
+        confidence = _calculate_basic_confidence(user, work)
+        if confidence > 0.3:
+            pool_entry = UserWorkPool(
+                user_id=user_id,
+                work_id=work.id,
+                work_type='essay',
+                confidence_score=confidence,
+                added_reason="Basic algorithm match"
+            )
+            db.session.add(pool_entry)
+    
+    db.session.commit()
+    return True
 
 def _calculate_basic_confidence(user, work):
     """
@@ -223,47 +262,3 @@ def _calculate_basic_confidence(user, work):
     # Ensure score stays within bounds
     return max(0.0, min(1.0, base_score))
 
-def get_user_recommendations_for_date(user_id, target_date=None):
-    """
-    Get or generate individual recommendations for a user on a specific date.
-    
-    Returns:
-        dict with keys 'poem', 'story', 'essay' containing WorkRecommendation objects
-    """
-    if target_date is None:
-        target_date = date.today()
-    
-    # Get existing recommendations for each type
-    poem_rec = WorkRecommendation.query.filter_by(
-        user_id=user_id,
-        work_type='poem',
-        date=target_date
-    ).first()
-    
-    story_rec = WorkRecommendation.query.filter_by(
-        user_id=user_id,
-        work_type='short_story',
-        date=target_date
-    ).first()
-    
-    essay_rec = WorkRecommendation.query.filter_by(
-        user_id=user_id,
-        work_type='essay',
-        date=target_date
-    ).first()
-    
-    # Generate missing recommendations
-    if not poem_rec:
-        poem_rec = generate_daily_recommendation(user_id, 'poem', target_date)
-    
-    if not story_rec:
-        story_rec = generate_daily_recommendation(user_id, 'short_story', target_date)
-    
-    if not essay_rec:
-        essay_rec = generate_daily_recommendation(user_id, 'essay', target_date)
-    
-    return {
-        'poem': poem_rec,
-        'story': story_rec,
-        'essay': essay_rec
-    }

@@ -20,8 +20,10 @@ Implementation Strategy for Embedding Recommendation Engine
 class EmbeddingRecommendationEngine:
     def __init__(self):
         self.client = genai.Client(api_key=current_app.config['GEMINI_API_KEY'])
+        self.llm_model = "gemini-2.5-flash-lite"
         self.embedding_model = "gemini-embedding-001"  # using gemini free tier for now
         self.embedding_dim = 3072  # Dimension of the embedding vectors. lets just use default 3096 since it is normalized
+        self.num_final_recommendations = 30  # Default number of recommendations per category
     
     def _get_embedding(self, text):
         """Get embedding for text using Gemini API"""
@@ -109,7 +111,13 @@ class EmbeddingRecommendationEngine:
         """Find works most similar to user's preferences"""
         
         user = User.query.get(user_id)
-        user_embedding = self.generate_user_embedding(user)
+        if not user or not user.embedding_vector:
+            return []
+            
+        try:
+            user_embedding = json.loads(user.embedding_vector)
+        except (json.JSONDecodeError, TypeError):
+            return []
         
         # Get all works (or filter by type)
         query = Work.query.filter(Work.embedding_vector.isnot(None))
@@ -148,15 +156,39 @@ class EmbeddingRecommendationEngine:
         for idx in top_indices:
             similar_works.append({
                 'work': work_objects[idx],
-                'similarity_score': float(similarities[idx]),
-                'embedding_confidence': min(1.0, similarities[idx] * 2)  # Scale to 0-1
+                'similarity_score': float(similarities[idx])
             })
         
         return similar_works
     
+    # STEP 3.5: Embedding-only recommendations (simpler, faster)
+    def generate_embedding_recommendations(self, user_id, work_type, num_final_recommendations=None):
+        """Generate recommendations using only embedding similarity (no LLM)"""
+        if num_final_recommendations is None:
+            num_final_recommendations = self.num_final_recommendations
+            
+        similar_works = self.find_similar_works(
+            user_id, 
+            work_type=work_type, 
+            top_k=num_final_recommendations
+        )
+        
+        # Convert to format expected by populate_user_work_pool
+        recommendations = []
+        for item in similar_works:
+            recommendations.append({
+                'work': item['work'],
+                'confidence_score': item['similarity_score'],
+                'embedding_score': item['similarity_score']
+            })
+        
+        return recommendations
+    
     # STEP 4: Hybrid approach - embeddings + LLM
-    def generate_hybrid_recommendations(self, user_id, work_type, num_final_recommendations=20):
+    def generate_hybrid_recommendations(self, user_id, work_type, num_final_recommendations=None):
         """Use embeddings to pre-filter, then LLM to fine-tune"""
+        if num_final_recommendations is None:
+            num_final_recommendations = self.num_final_recommendations
         
         # Phase 1: Use embeddings to get top candidates (fast, cheap)
         similar_works = self.find_similar_works(
@@ -179,7 +211,7 @@ class EmbeddingRecommendationEngine:
         final_recommendations = []
         for item in similar_works:
             work_id = item['work'].id
-            embedding_score = item['embedding_confidence']
+            embedding_score = item['similarity_score']
             llm_score = llm_scores.get(str(work_id), 0.5)  # Default to neutral if missing
             
             # Weighted combination (you can tune these weights)
@@ -224,7 +256,7 @@ class EmbeddingRecommendationEngine:
         
         try:
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash-lite",
+                model=self.llm_model,
                 contents=prompt
             )
             
@@ -234,15 +266,14 @@ class EmbeddingRecommendationEngine:
             # Fallback to neutral scores
             return {str(work.id): 0.5 for work in candidate_works}
     
-    # STEP 5: Update work pool with hybrid scores
+    # STEP 5: Update work pool with embedding scores
     def populate_user_work_pool(self, user_id):
-        """Populate UserWorkPool with hybrid recommendation scores"""
+        """Populate UserWorkPool with embedding-based recommendation scores"""
         
         for work_type in ['poem', 'short_story', 'essay']:
-            recommendations = self.generate_hybrid_recommendations(
+            recommendations = self.generate_embedding_recommendations(
                 user_id, 
-                work_type, 
-                num_final_recommendations=30  # Generate 30 per category
+                work_type
             )
             
             for rec in recommendations:

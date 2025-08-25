@@ -1,65 +1,43 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Notes
+
+- **Think carefully and try to identify the root cause instead of adding unnecessary complexity. Keep changes concise when possible.**
 
 ## Project Overview
 
-A daily literary recommendation app inspired by Ray Bradbury's quote: "You must read one poem, one short story, and one essay every night for 1,000 nights." The app provides personalized daily recommendations across three categories, learns from user ratings, and builds reading habits through an intelligent recommendation system.
+A daily literary recommendation app inspired by Ray Bradbury's quote: "You must read one poem, one short story, and one essay every night for 1,000 nights." The app provides personalized daily recommendations using an embedding-based recommendation system.
 
 ## Development Commands
 
 ```bash
-# Run the Flask development server
-python run.py
-
-# Seed the database with curated literary content
-python scripts/seed_content.py
-
-# Install dependencies
-pip install -r requirements.txt
+python run.py                    # Run Flask development server
+python scripts/seed_content.py  # Seed database with content
+pip install -r requirements.txt # Install dependencies
 ```
 
-## Current Implementation Status
+## Current Status & Next Priorities
 
-### ✅ COMPLETED:
-- Complete Flask app structure with all database models
-- User authentication system (registration/login/logout)
-- All SQLAlchemy models with proper relationships
-- Template system with responsive design using Tailwind CSS
-- Navigation and routing structure
-- **Full onboarding system** - Backend processing and preference storage
-- **Individual recommendation engine** - Simplified WorkRecommendation system (removed DailyRecommendationSet)
-- **Daily view with real recommendations** - Shows actual works with working external links
-- **Individual rating system** - Rate each poem/story/essay separately
-- **Profile/preferences editing page** - Update preferences and view reading stats
-- **Preference summary system** - Natural language summaries for LLM integration
-- **UserWorkPool population** - Basic confidence scoring algorithm
-- **Database seeded** - 15 initial works (5 poems, 5 stories, 5 essays) with working content URLs
-- **🆕 Embedding-based recommendation system** - Google Gemini API integration with cosine similarity matching
-- **🆕 Enhanced database schema** - Added embedding_vector columns to User and Work models
-- **🆕 Hybrid recommendation architecture** - Embeddings for fast pre-filtering + LLM for final refinement
+### ✅ Completed:
+- Flask app with authentication, models, and templates
+- **✅ Fully integrated embedding-based recommendation system** - Google Gemini API with 3072-dimensional vectors
+- **✅ Complete preference pipeline** - Raw preferences → summary → embedding → recommendations
+- **✅ Atomic preference saving** - `save_user_preferences()` handles complete workflow
+- **✅ Template/route consistency** - Fixed `story` vs `short_story` key mapping
+- **✅ Clean architecture** - Moved preference logic to `preference_utils.py`
+- **✅ Embedding generation** - Only called during onboarding/profile updates (cost-efficient)
+- **✅ Individual rating system** - Rate each poem/story/essay separately
+- **✅ Database seeded** - 15 works with embedding vectors generated
 
-### 📋 IMMEDIATE PRIORITIES:
+### 🔍 Current Limitation:
+- **Similar recommendations across users** due to small content pool (15 works) and content-preference mismatch
+- Algorithm working correctly but needs more diverse content to differentiate properly
 
-#### Phase 1: Integration of New Embedding System (NEXT)
-1. **Update routes to use embedding recommendations** - Replace basic algorithm with embedding-based system
-2. **Integrate hybrid recommendations** - Connect embedding + LLM scoring to existing UserWorkPool
-3. **Test embedding system with real users** - Ensure similarity matching works across different preferences
-
-#### Phase 2: User Experience Enhancement
-4. **Skip/Regenerate functionality** - Allow users to skip individual recommendations and get new ones
-5. **Mark as read functionality** - Update recommendation status when user clicks "Read Now"
-6. **Reading progress tracking** - Better status management (unread/in_progress/completed)
-
-#### Phase 3: Enhanced Intelligence & Content
-7. **Learning from ratings** - Update confidence scores and embeddings based on user feedback
-8. **Content expansion** - Seed database with more works (50+ per category) for better recommendations
-9. **Advanced LLM refinement** - Use LLM to enhance recommendation reasoning and variety
-
-#### Phase 4: Extended Features
-10. **Reading history page** - View past recommendations and ratings
-11. **Reading streaks & habits** - Track daily reading consistency
-12. **Advanced analytics** - Reading patterns, favorite authors/themes analysis
+### 📋 Next Steps:
+1. **Content expansion** - Add 50+ works per category with diverse themes (religious, philosophical, modern, etc.)
+2. **Learning system** - Update confidence scores based on user ratings
+3. **LLM integration** - call LLM model to refine confidence scores for top choices further 
+4. **Algorithm refinement** - Adjust similarity thresholds and add content diversity scoring
 
 ## Architecture Overview
 
@@ -108,7 +86,7 @@ def generate_daily_recommendation(user_id, work_type, date):
 # Generate all three independently
 recommendations = {
     'poem': generate_daily_recommendation(user_id, 'poem', date),
-    'story': generate_daily_recommendation(user_id, 'short_story', date),
+    'short_story': generate_daily_recommendation(user_id, 'short_story', date),
     'essay': generate_daily_recommendation(user_id, 'essay', date)
 }
 ```
@@ -121,77 +99,13 @@ recommendations = {
 
 ## Technology Stack
 - **Backend:** Flask + SQLAlchemy
-- **Database:** SQLite (development) / PostgreSQL (production)  
-- **Frontend:** Tailwind CSS via CDN, minimal JavaScript
+- **Database:** SQLite (development) 
+- **Frontend:** Tailwind CSS, minimal JavaScript
 - **Authentication:** Flask-Login
-- **Planned AI Integration:** LLM API (OpenAI/Anthropic) for generating recommendation pools
-- **Content Sources:** Public domain works (Project Gutenberg, Poetry Foundation)
+- **AI:** Google Gemini API for embeddings and LLM scoring
 
-## Code Style & Preferences
-
-### Python/Flask Conventions:
-- Use SQLAlchemy ORM for all database operations
+## Code Conventions
+- SQLAlchemy ORM for all database operations
 - Flask-Login for authentication
-- Blueprint structure for routes
-- Environment-based configuration (config.py)
-- Clear model relationships with proper foreign keys
-
-### Frontend Approach:
-- **Tailwind CSS** for styling (already implemented)
-- **Minimal JavaScript** - progressive enhancement
-- **Mobile-first responsive design**
-- **Semantic HTML** with accessibility considerations
-
-### Database Design:
-- **Confidence scoring system** (0-1 float) for recommendation quality
-- **Status tracking** for works (available/recommended/exhausted)
-- **Comprehensive metadata** for works (difficulty, themes, reading time)
-
-## Session Summary (Latest)
-
-### Major Architectural Refactor Completed:
-1. **Built complete recommendation system** - From basic confidence scoring to full user workflow
-2. **Implemented full onboarding flow** - User preferences captured and stored with natural language summaries
-3. **Created profile/preferences editing** - Users can update preferences and view reading statistics
-4. **Added individual rating system** - Rate each work separately with 1-5 stars
-5. **Simplified architecture** - Removed DailyRecommendationSet complexity, now using individual WorkRecommendations
-6. **Database structure finalized** - All models working with proper relationships and data types
-
-### Key Benefits Achieved:
-- **Flexible individual control** - Skip, rate, or regenerate any work independently
-- **LLM-ready preference system** - Natural language summaries for smarter recommendations
-- **Clean, maintainable codebase** - Simpler queries, clearer data flow
-- **Complete user experience** - From registration to daily recommendations with ratings
-
-### Ready for Next Phase:
-- **Integrate embedding system** - Connect new recommendation engine to existing routes
-- **Skip/regenerate functionality** - Allow users to get new individual recommendations
-- **Reading progress tracking** - Mark works as read/in-progress
-
-## Session Summary (Latest - Embedding System Implementation)
-
-### Major Breakthrough - AI-Powered Recommendations:
-1. **Built complete embedding recommendation system** - Google Gemini API integration with hybrid approach
-2. **Enhanced database schema** - Added embedding_vector fields to User and Work models with Flask-Migrate
-3. **Implemented intelligent matching** - Cosine similarity for fast pre-filtering + LLM refinement
-4. **Created testing infrastructure** - Scripts to generate, test, and inspect embeddings
-5. **Solved API integration challenges** - Fixed dimension mismatches and response parsing
-
-### Technical Achievements:
-- **Environment configuration** - Secure API key storage with .env and python-dotenv
-- **Hybrid architecture** - Balance of speed (embeddings) and accuracy (LLM scoring)  
-- **Cost optimization** - Free Gemini API tier with semantic similarity task configuration
-- **Error handling** - Robust fallbacks and dimension validation
-- **Testing tools** - Scripts for embedding generation and similarity testing
-
-### Current State - Ready for Integration:
-- **15 works with embeddings** - All literature pieces have 3072-dimensional vectors
-- **User preference embeddings** - Natural language summaries converted to searchable vectors
-- **Working similarity matching** - Cosine similarity successfully finds relevant content
-- **Tested end-to-end** - Embedding generation → similarity calculation → recommendation ranking
-
-### Next Session Goals:
-- **Replace basic recommendation algorithm** - Switch routes to use embedding-based system
-- **Integrate with existing UserWorkPool** - Use hybrid scores in current workflow
-- **Expand content database** - Add more works for richer recommendations
-- **Implement LLM refinement** - Use Gemini for final recommendation scoring
+- Confidence scoring system (0-1 float) for recommendation quality
+- UTC timestamps for all datetime fields

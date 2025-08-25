@@ -3,6 +3,9 @@ Utility functions for processing and summarizing user preferences.
 """
 
 from .models import User, UserPreference
+from .embeddings_engine import EmbeddingRecommendationEngine
+from . import db
+import json
 
 def generate_preference_summary(user_id):
     """
@@ -147,3 +150,112 @@ def get_user_preference_summary(user_id):
         pass
     
     return summary
+
+def save_user_preferences(user_id, data):
+    """
+    Parse and save user preferences from onboarding form, generate preference summary,
+    and create embedding vector for recommendation matching.
+    
+    Args:
+        user_id: The ID of the user
+        data: Form data containing preferences
+    
+    TODO: Enhanced parsing for better preference extraction:
+    - Use NLP to extract genres/themes from book titles
+    - Identify author writing styles and periods
+    - Map movie directors to literary equivalents
+    - Extract keywords and themes from interests
+    - Parse complex preference descriptions
+    """
+    
+    # Save favorite books
+    favorite_books = data.get('favoriteBooks', '').strip()
+    if favorite_books:
+        for book in favorite_books.split('\n'):
+            book = book.strip()
+            if book:
+                # TODO: Parse book title to extract:
+                # - Genre inference
+                # - Author style matching
+                # - Theme extraction
+                # - Publication period preferences
+                pref = UserPreference(
+                    user_id=user_id,
+                    preference_type='book',
+                    preference_value=book,
+                    weight=1.0
+                )
+                db.session.add(pref)
+    
+    # Save favorite authors
+    favorite_authors = data.get('favoriteAuthors', '').strip()
+    if favorite_authors:
+        for author in favorite_authors.split('\n'):
+            author = author.strip()
+            if author:
+                # TODO: Author analysis:
+                # - Map to writing style characteristics
+                # - Identify common themes in their work
+                # - Find similar contemporary/classic authors
+                # - Extract genre preferences from author catalog
+                pref = UserPreference(
+                    user_id=user_id,
+                    preference_type='author',
+                    preference_value=author,
+                    weight=1.0
+                )
+                db.session.add(pref)
+    
+    # Save other interests (movies, directors, artists)
+    other_interests = data.get('otherInterests', '').strip()
+    if other_interests:
+        for interest in other_interests.split('\n'):
+            interest = interest.strip()
+            if interest:
+                # TODO: Cross-media preference mapping:
+                # - Map film directors to literary equivalents (e.g., Wes Anderson -> quirky, detailed prose)
+                # - Extract visual artist styles to literary themes
+                # - Music preferences to rhythm/mood in writing
+                # - Identify aesthetic preferences that cross mediums
+                pref = UserPreference(
+                    user_id=user_id,
+                    preference_type='interest',
+                    preference_value=interest,
+                    weight=0.8
+                )
+                db.session.add(pref)
+    
+    # Save topics to avoid
+    avoid_topics = data.get('avoidTopics', '').strip()
+    if avoid_topics:
+        for topic in avoid_topics.split('\n'):
+            topic = topic.strip()
+            if topic:
+                # TODO: Topic avoidance parsing:
+                # - Expand single topics to related themes
+                # - Handle nuanced preferences (e.g., "some violence ok, but not graphic")
+                # - Map broad categories to specific literary elements
+                pref = UserPreference(
+                    user_id=user_id,
+                    preference_type='avoid',
+                    preference_value=topic,
+                    weight=-1.0
+                )
+                db.session.add(pref)
+    
+    # Generate preference summary for LLM integration
+    update_user_preference_summary(user_id)
+    
+    # Generate and save user embedding vector
+    user = User.query.get(user_id)
+    if user and user.preference_summary:
+        try:
+            engine = EmbeddingRecommendationEngine()
+            embedding = engine.generate_user_embedding(user)
+            
+            user.embedding_vector = json.dumps(embedding)
+            db.session.commit()
+            
+        except Exception as e:
+            print(f"Error generating user embedding: {e}")
+            # Continue without embedding - will fall back to basic recommendations

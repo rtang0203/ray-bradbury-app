@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app, db
 from app.models import User, Work
-from app.recommendations_embeddings import EmbeddingRecommendationEngine
+from app.embeddings_engine import EmbeddingRecommendationEngine
 import json
 
 def test_embedding_system():

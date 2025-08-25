@@ -3,8 +3,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 from .models import User, UserPreference, WorkRecommendation
-from .recommendations import get_user_recommendations_for_date, populate_user_work_pool
-from .preference_utils import update_user_preference_summary
+from .recommendations import get_daily_recommendations, populate_user_work_pool
+from .preference_utils import save_user_preferences
 from . import db
 from datetime import date, datetime, timezone
 
@@ -86,10 +86,7 @@ def onboarding():
             # Get form data
             data = request.get_json() if request.is_json else request.form
             
-            # Parse and save user preferences
-            _save_user_preferences(current_user.id, data)
-            
-            # Update user settings
+            # Update user settings first
             current_user.difficulty_preference = data.get('difficulty', 'intermediate')
             current_user.preferred_length = data.get('length', 'medium')
             
@@ -97,15 +94,15 @@ def onboarding():
             adventurousness = float(data.get('adventurousness', 50)) / 100.0
             current_user.adventurousness_level = adventurousness
             
+            # Parse and save user preferences (with complete user data)
+            save_user_preferences(current_user.id, data)
+            
             # Mark onboarding as completed
             current_user.onboarding_completed = True
             
             db.session.commit()
             
-            # Generate preference summary for LLM use
-            update_user_preference_summary(current_user.id)
-            
-            # Generate initial work pool
+            # Generate initial work pool (preferences + summary + embedding created by save_user_preferences)
             populate_user_work_pool(current_user.id)
             
             flash('Welcome! Your preferences have been saved.')
@@ -123,92 +120,6 @@ def onboarding():
             
     return render_template('onboarding.html')
 
-def _save_user_preferences(user_id, data):
-    """
-    Parse and save user preferences from onboarding form.
-    
-    TODO: Enhanced parsing for better preference extraction:
-    - Use NLP to extract genres/themes from book titles
-    - Identify author writing styles and periods
-    - Map movie directors to literary equivalents
-    - Extract keywords and themes from interests
-    - Parse complex preference descriptions
-    """
-    
-    # Save favorite books
-    favorite_books = data.get('favoriteBooks', '').strip()
-    if favorite_books:
-        for book in favorite_books.split('\n'):
-            book = book.strip()
-            if book:
-                # TODO: Parse book title to extract:
-                # - Genre inference
-                # - Author style matching
-                # - Theme extraction
-                # - Publication period preferences
-                pref = UserPreference(
-                    user_id=user_id,
-                    preference_type='book',
-                    preference_value=book,
-                    weight=1.0
-                )
-                db.session.add(pref)
-    
-    # Save favorite authors
-    favorite_authors = data.get('favoriteAuthors', '').strip()
-    if favorite_authors:
-        for author in favorite_authors.split('\n'):
-            author = author.strip()
-            if author:
-                # TODO: Author analysis:
-                # - Map to writing style characteristics
-                # - Identify common themes in their work
-                # - Find similar contemporary/classic authors
-                # - Extract genre preferences from author catalog
-                pref = UserPreference(
-                    user_id=user_id,
-                    preference_type='author',
-                    preference_value=author,
-                    weight=1.0
-                )
-                db.session.add(pref)
-    
-    # Save other interests (movies, directors, artists)
-    other_interests = data.get('otherInterests', '').strip()
-    if other_interests:
-        for interest in other_interests.split('\n'):
-            interest = interest.strip()
-            if interest:
-                # TODO: Cross-media preference mapping:
-                # - Map film directors to literary equivalents (e.g., Wes Anderson -> quirky, detailed prose)
-                # - Extract visual artist styles to literary themes
-                # - Music preferences to rhythm/mood in writing
-                # - Identify aesthetic preferences that cross mediums
-                pref = UserPreference(
-                    user_id=user_id,
-                    preference_type='interest',
-                    preference_value=interest,
-                    weight=0.8
-                )
-                db.session.add(pref)
-    
-    # Save topics to avoid
-    avoid_topics = data.get('avoidTopics', '').strip()
-    if avoid_topics:
-        for topic in avoid_topics.split('\n'):
-            topic = topic.strip()
-            if topic:
-                # TODO: Topic avoidance parsing:
-                # - Expand single topics to related themes
-                # - Handle nuanced preferences (e.g., "some violence ok, but not graphic")
-                # - Map broad categories to specific literary elements
-                pref = UserPreference(
-                    user_id=user_id,
-                    preference_type='avoid',
-                    preference_value=topic,
-                    weight=-1.0
-                )
-                db.session.add(pref)
 
 @bp.route('/daily')
 @login_required
@@ -216,7 +127,7 @@ def daily_view():
     if not current_user.onboarding_completed:
         return redirect(url_for('routes.onboarding'))
     
-    recommendations = get_user_recommendations_for_date(current_user.id)
+    recommendations = get_daily_recommendations(current_user.id)
     
     return render_template('daily.html', recommendations=recommendations, datetime=datetime)
 
@@ -224,7 +135,7 @@ def daily_view():
 @login_required
 def daily_view_test():
     """Temporary route to test daily template without onboarding requirement"""
-    recommendations = get_user_recommendations_for_date(current_user.id)
+    recommendations = get_daily_recommendations(current_user.id)
     
     return render_template('daily.html', recommendations=recommendations, datetime=datetime)
 
@@ -254,10 +165,7 @@ def profile():
             # Clear existing preferences
             UserPreference.query.filter_by(user_id=current_user.id).delete()
             
-            # Save updated preferences
-            _save_user_preferences(current_user.id, data)
-            
-            # Update user settings
+            # Update user settings first
             current_user.difficulty_preference = data.get('difficulty', current_user.difficulty_preference)
             current_user.preferred_length = data.get('length', current_user.preferred_length)
             
@@ -265,13 +173,14 @@ def profile():
             adventurousness = float(data.get('adventurousness', current_user.adventurousness_level * 100)) / 100.0
             current_user.adventurousness_level = adventurousness
             
+            # Save updated preferences (with complete user data)
+            save_user_preferences(current_user.id, data)
+            
             db.session.commit()
             
-            # Regenerate preference summary
-            update_user_preference_summary(current_user.id)
-            
-            # TODO: Optionally regenerate work pool based on new preferences
-            # populate_user_work_pool(current_user.id)
+            # Regenerate work pool with new embedding-based recommendations 
+            # (preference summary + embedding already updated by save_user_preferences)
+            populate_user_work_pool(current_user.id)
             
             flash('Preferences updated successfully!')
             
