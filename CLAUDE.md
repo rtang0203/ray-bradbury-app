@@ -35,29 +35,47 @@ pip install -r requirements.txt
 - **Preference summary system** - Natural language summaries for LLM integration
 - **UserWorkPool population** - Basic confidence scoring algorithm
 - **Database seeded** - 15 initial works (5 poems, 5 stories, 5 essays) with working content URLs
+- **🆕 Embedding-based recommendation system** - Google Gemini API integration with cosine similarity matching
+- **🆕 Enhanced database schema** - Added embedding_vector columns to User and Work models
+- **🆕 Hybrid recommendation architecture** - Embeddings for fast pre-filtering + LLM for final refinement
 
 ### 📋 IMMEDIATE PRIORITIES:
 
-#### Phase 1: User Experience Enhancement (NEXT)
-1. **Skip/Regenerate functionality** - Allow users to skip individual recommendations and get new ones
-2. **Mark as read functionality** - Update recommendation status when user clicks "Read Now"
-3. **Reading progress tracking** - Better status management (unread/in_progress/completed)
+#### Phase 1: Integration of New Embedding System (NEXT)
+1. **Update routes to use embedding recommendations** - Replace basic algorithm with embedding-based system
+2. **Integrate hybrid recommendations** - Connect embedding + LLM scoring to existing UserWorkPool
+3. **Test embedding system with real users** - Ensure similarity matching works across different preferences
 
-#### Phase 2: LLM Integration & Intelligence
-4. **LLM-powered recommendations** - Use preference summaries to generate smarter UserWorkPool
-5. **Learning from ratings** - Update confidence scores based on user feedback
-6. **Advanced recommendation variety** - Consider themes, writing styles, author diversity
+#### Phase 2: User Experience Enhancement
+4. **Skip/Regenerate functionality** - Allow users to skip individual recommendations and get new ones
+5. **Mark as read functionality** - Update recommendation status when user clicks "Read Now"
+6. **Reading progress tracking** - Better status management (unread/in_progress/completed)
 
-#### Phase 3: Extended Features
-7. **Reading history page** - View past recommendations and ratings
-8. **Reading streaks & habits** - Track daily reading consistency
-9. **Content expansion** - Add more works to the database
+#### Phase 3: Enhanced Intelligence & Content
+7. **Learning from ratings** - Update confidence scores and embeddings based on user feedback
+8. **Content expansion** - Seed database with more works (50+ per category) for better recommendations
+9. **Advanced LLM refinement** - Use LLM to enhance recommendation reasoning and variety
+
+#### Phase 4: Extended Features
+10. **Reading history page** - View past recommendations and ratings
+11. **Reading streaks & habits** - Track daily reading consistency
+12. **Advanced analytics** - Reading patterns, favorite authors/themes analysis
 
 ## Architecture Overview
 
-### UserWorkPool System (KEY INNOVATION)
-- **Purpose:** Pre-generates and caches recommendations to avoid daily LLM API calls
-- **Logic:** LLM analyzes user preferences → generates ~50-100 works per category → stores with confidence scores
+### Embedding-Based Recommendation System (NEW!)
+- **Technology:** Google Gemini API (gemini-embedding-001) with 3072-dimensional vectors
+- **Architecture:** Hybrid approach combining embedding similarity + LLM refinement
+- **Process Flow:** 
+  1. Generate embeddings for all works and user preferences
+  2. Use cosine similarity to find top 50 candidates (fast, cheap)
+  3. LLM scores top candidates for final ranking (accurate, expensive)
+  4. Populate UserWorkPool with confidence scores
+- **Benefits:** Cost-effective, scalable, and intelligently matches user preferences to content
+
+### UserWorkPool System (ENHANCED)
+- **Purpose:** Pre-generates and caches recommendations using embedding + LLM hybrid scoring
+- **Logic:** Embedding similarity finds candidates → LLM refines → stores with confidence scores
 - **Daily Selection:** Pick highest confidence works not recently recommended
 - **Learning:** Good ratings boost similar works, bad ratings lower confidence scores
 
@@ -146,6 +164,34 @@ recommendations = {
 - **Complete user experience** - From registration to daily recommendations with ratings
 
 ### Ready for Next Phase:
+- **Integrate embedding system** - Connect new recommendation engine to existing routes
 - **Skip/regenerate functionality** - Allow users to get new individual recommendations
-- **Reading progress tracking** - Mark works as read/in-progress  
-- **LLM integration** - Use preference summaries for smarter work pool generation
+- **Reading progress tracking** - Mark works as read/in-progress
+
+## Session Summary (Latest - Embedding System Implementation)
+
+### Major Breakthrough - AI-Powered Recommendations:
+1. **Built complete embedding recommendation system** - Google Gemini API integration with hybrid approach
+2. **Enhanced database schema** - Added embedding_vector fields to User and Work models with Flask-Migrate
+3. **Implemented intelligent matching** - Cosine similarity for fast pre-filtering + LLM refinement
+4. **Created testing infrastructure** - Scripts to generate, test, and inspect embeddings
+5. **Solved API integration challenges** - Fixed dimension mismatches and response parsing
+
+### Technical Achievements:
+- **Environment configuration** - Secure API key storage with .env and python-dotenv
+- **Hybrid architecture** - Balance of speed (embeddings) and accuracy (LLM scoring)  
+- **Cost optimization** - Free Gemini API tier with semantic similarity task configuration
+- **Error handling** - Robust fallbacks and dimension validation
+- **Testing tools** - Scripts for embedding generation and similarity testing
+
+### Current State - Ready for Integration:
+- **15 works with embeddings** - All literature pieces have 3072-dimensional vectors
+- **User preference embeddings** - Natural language summaries converted to searchable vectors
+- **Working similarity matching** - Cosine similarity successfully finds relevant content
+- **Tested end-to-end** - Embedding generation → similarity calculation → recommendation ranking
+
+### Next Session Goals:
+- **Replace basic recommendation algorithm** - Switch routes to use embedding-based system
+- **Integrate with existing UserWorkPool** - Use hybrid scores in current workflow
+- **Expand content database** - Add more works for richer recommendations
+- **Implement LLM refinement** - Use Gemini for final recommendation scoring

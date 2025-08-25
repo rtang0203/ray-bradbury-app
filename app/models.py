@@ -14,6 +14,7 @@ class User(UserMixin, db.Model):
     difficulty_preference = db.Column(db.String(20), default='intermediate')  # beginner/intermediate/advanced
     preferred_length = db.Column(db.String(20), default='medium')  # short/medium/long
     preference_summary = db.Column(db.Text)  # LLM-friendly summary of all preferences
+    embedding_vector = db.Column(db.Text)  # JSON-encoded embedding vector for user preferences
     active = db.Column(db.Boolean, default=True)
     
     # Relationships
@@ -44,6 +45,7 @@ class Work(db.Model):
     publication_year = db.Column(db.Integer)
     public_domain = db.Column(db.Boolean, default=True)
     word_count = db.Column(db.Integer)
+    embedding_vector = db.Column(db.Text)  # JSON-encoded embedding vector
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     active = db.Column(db.Boolean, default=True)
     
