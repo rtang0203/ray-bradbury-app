@@ -75,6 +75,7 @@ class EmbeddingRecommendationEngine:
         if work.summary:
             description_parts.append(f"Summary: {work.summary}")
         
+        ''' #not really necessary
         # Add difficulty and length info
         if work.difficulty_level:
             description_parts.append(f"Difficulty: {work.difficulty_level}")
@@ -87,6 +88,7 @@ class EmbeddingRecommendationEngine:
             
         if work.word_count:
             description_parts.append(f"Length: {work.word_count} words")
+        '''
         
         return " | ".join(description_parts)
     
