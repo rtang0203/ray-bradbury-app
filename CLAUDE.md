@@ -1,9 +1,5 @@
 # CLAUDE.md
 
-## Notes
-
-- **Think carefully and try to identify the root cause instead of adding unnecessary complexity. Keep changes concise when possible.**
-
 ## Project Overview
 
 A daily literary recommendation app inspired by Ray Bradbury's quote: "You must read one poem, one short story, and one essay every night for 1,000 nights." The app provides personalized daily recommendations using an embedding-based recommendation system.
@@ -14,88 +10,75 @@ A daily literary recommendation app inspired by Ray Bradbury's quote: "You must 
 python run.py                    # Run Flask development server
 python scripts/seed_content.py  # Seed database with content
 pip install -r requirements.txt # Install dependencies
+python scripts/find_gutenberg_urls.py --update # Find Project Gutenberg URLs
 ```
 
-## Current Status & Next Priorities
+## Current App Features
 
-### ✅ Completed:
-- Flask app with authentication, models, and templates
-- **✅ Fully integrated embedding-based recommendation system** - Google Gemini API with 3072-dimensional vectors
-- **✅ Complete preference pipeline** - Raw preferences → summary → embedding → recommendations
-- **✅ Atomic preference saving** - `save_user_preferences()` handles complete workflow
-- **✅ Template/route consistency** - Fixed `story` vs `short_story` key mapping
-- **✅ Clean architecture** - Moved preference logic to `preference_utils.py`
-- **✅ Embedding generation** - Only called during onboarding/profile updates (cost-efficient)
-- **✅ Individual rating system** - Rate each poem/story/essay separately
-- **✅ Database seeded** - 15 works with embedding vectors generated
+### Authentication & User Management
+- **User registration/login** - Username or email login supported
+- **Onboarding flow** - Preference collection and work pool generation
+- **Profile management** - Update preferences and view reading statistics
 
-### 🔍 Current Limitation:
-- **Similar recommendations across users** due to small content pool (15 works) and content-preference mismatch
-- Algorithm working correctly but needs more diverse content to differentiate properly
+### Daily Recommendations
+- **Daily view** (`/daily`) - Shows today's poem, short story, and essay
+- **Individual ratings** - Rate each work 1-5 stars via AJAX
+- **Reading tracking** - Tracks completion status and reading history
 
-### 📋 Next Steps:
-1. **Content expansion** - Add 50+ works per category with diverse themes (religious, philosophical, modern, etc.)
-2. **Learning system** - Update confidence scores based on user ratings
-3. **LLM integration** - call LLM model to refine confidence scores for top choices further 
-4. **Algorithm refinement** - Adjust similarity thresholds and add content diversity scoring
+### Recommendation System
+- **Embedding-based matching** - Google Gemini API with 3072-dimensional vectors
+- **Preference pipeline** - Raw preferences → summary → embedding → recommendations
+- **Work pool system** - Pre-generates personalized recommendations with confidence scores
+- **Real-time updates** - Pool regeneration when preferences change
 
-## Architecture Overview
+### Content Library
+- **90 total works** - Poems, short stories, and essays
+- **77 works with URLs** - Direct links to Project Gutenberg HTML versions
+- **Automatic URL finding** - Script to populate missing content links
 
-### Embedding-Based Recommendation System (NEW!)
-- **Technology:** Google Gemini API (gemini-embedding-001) with 3072-dimensional vectors
-- **Architecture:** Hybrid approach combining embedding similarity + LLM refinement
-- **Process Flow:** 
-  1. Generate embeddings for all works and user preferences
-  2. Use cosine similarity to find top 50 candidates (fast, cheap)
-  3. LLM scores top candidates for final ranking (accurate, expensive)
-  4. Populate UserWorkPool with confidence scores
-- **Benefits:** Cost-effective, scalable, and intelligently matches user preferences to content
+## Routes Available
 
-### UserWorkPool System (ENHANCED)
-- **Purpose:** Pre-generates and caches recommendations using embedding + LLM hybrid scoring
-- **Logic:** Embedding similarity finds candidates → LLM refines → stores with confidence scores
-- **Daily Selection:** Pick highest confidence works not recently recommended
-- **Learning:** Good ratings boost similar works, bad ratings lower confidence scores
+| Route | Method | Description |
+|-------|---------|-------------|
+| `/` | GET | Welcome page or redirect to daily view |
+| `/register` | GET/POST | User registration |
+| `/login` | GET/POST | User login |
+| `/logout` | GET | User logout |
+| `/onboarding` | GET/POST | Preference collection for new users |
+| `/daily` | GET | Today's recommendations |
+| `/daily-test` | GET | Test daily view (bypasses onboarding) |
+| `/profile` | GET/POST | View/update user preferences and stats |
+| `/generate-pool` | GET | Manually regenerate work pool |
+| `/rate-recommendation` | POST | AJAX endpoint for rating works |
 
-### Core Data Model Flow (Simplified Architecture)
+## How the Recommendation System Works
 
-The recommendation system works through individual WorkRecommendation records:
+### Overview
+The app uses an embedding-based recommendation system powered by Google Gemini API to match users with literary works based on their preferences.
 
-1. **User** → **UserPreference**: Captures reading preferences during onboarding with natural language summaries
-2. **Work** → **UserWorkPool**: Algorithm adds works to user's personalized pool with confidence scores
-3. **UserWorkPool** → **WorkRecommendation**: Daily algorithm selects from pool to create individual recommendations
-4. **Individual recommendations**: Each work type (poem/story/essay) is independent - no grouping required
+### Process Flow
+1. **Onboarding**: User provides preferences (books, authors, interests, things to avoid)
+2. **Preference Processing**: Raw preferences → natural language summary → embedding vector
+3. **Work Pool Generation**: Algorithm finds matching works and generates confidence scores
+4. **Daily Selection**: System picks highest-confidence works not recently recommended
+5. **User Feedback**: Ratings help improve future recommendations
 
-### Key Model Relationships
+### Key Components
 
-- `WorkRecommendation` includes `work_type` field ('poem', 'short_story', 'essay') for independent tracking
-- `UserWorkPool` tracks recommendation history via `times_recommended`, `last_recommended_at`, and `status` (available/recommended/exhausted)
-- `User.preference_summary` stores LLM-friendly natural language version of all preferences
-- All datetime fields use `datetime.now(timezone.utc)` for UTC timestamps
+**UserWorkPool System**
+- Pre-generates personalized recommendations with confidence scores (0-1)
+- Tracks recommendation history and prevents recent repeats
+- Updates when preferences change
 
-### Recommendation Algorithm Design
+**Individual Recommendations** 
+- Each work type (poem/story/essay) recommended independently
+- Daily algorithm selects from user's available work pool
+- Ratings tracked per work for learning system
 
-```python
-def generate_daily_recommendation(user_id, work_type, date):
-    # 1. Check if recommendation already exists for date and work_type
-    # 2. Get user's available work pool for specific type (status='available') 
-    # 3. Select highest confidence work not recently recommended
-    # 4. Create individual WorkRecommendation record with work_type
-    # 5. Update UserWorkPool status to 'recommended'
-    
-# Generate all three independently
-recommendations = {
-    'poem': generate_daily_recommendation(user_id, 'poem', date),
-    'short_story': generate_daily_recommendation(user_id, 'short_story', date),
-    'essay': generate_daily_recommendation(user_id, 'essay', date)
-}
-```
-
-### Learning System
-- **Good ratings (4-5 stars):** Add similar works, boost confidence of related items
-- **Bad ratings (1-2 stars):** Remove similar works, lower confidence scores  
-- **Preference changes:** Regenerate relevant pool sections
-- **Pool refresh:** Generate new works every few weeks
+**Embedding Technology**
+- Google Gemini API (gemini-embedding-001) with 3072-dimensional vectors
+- Cosine similarity matching between user preferences and work content
+- Cost-efficient: embeddings generated only during onboarding/profile updates
 
 ## Technology Stack
 - **Backend:** Flask + SQLAlchemy
