@@ -74,7 +74,7 @@ def search_gutenberg(title, author):
                             continue
             
             # Be respectful to the server
-            time.sleep(1)
+            time.sleep(0.5)
             
         except Exception as e:
             print(f"  Error searching for '{query}': {e}")

@@ -2,6 +2,10 @@
 Content seeding script for Literary Recommendations App
 Populates the Work table with curated poems, short stories, and essays
 """
+import sys
+
+# Add the parent directory to sys.path to import from app
+sys.path.insert(0, '.')
 
 from app import create_app, db
 from app.models import Work

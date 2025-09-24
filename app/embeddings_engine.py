@@ -75,21 +75,6 @@ class EmbeddingRecommendationEngine:
         if work.summary:
             description_parts.append(f"Summary: {work.summary}")
         
-        ''' #not really necessary
-        # Add difficulty and length info
-        if work.difficulty_level:
-            description_parts.append(f"Difficulty: {work.difficulty_level}")
-            
-        if work.estimated_reading_time:
-            description_parts.append(f"Reading time: {work.estimated_reading_time} minutes")
-            
-        if work.publication_year:
-            description_parts.append(f"Published: {work.publication_year}")
-            
-        if work.word_count:
-            description_parts.append(f"Length: {work.word_count} words")
-        '''
-        
         return " | ".join(description_parts)
     
     # STEP 2: Generate user preference embedding
@@ -199,10 +184,6 @@ class EmbeddingRecommendationEngine:
             top_k=50  # Get top 50 candidates
         )
         
-        if len(similar_works) <= num_final_recommendations:
-            # If we don't have many candidates, just use embedding scores
-            return similar_works
-        
         # Phase 2: Use LLM to refine the top candidates (slower, more expensive but better)
         user = User.query.get(user_id)
         candidate_works = [item['work'] for item in similar_works]
@@ -241,6 +222,9 @@ class EmbeddingRecommendationEngine:
             works_text += "\n"
         
         prompt = f"""
+        Only respond with JSON. Do not add any extra text.
+        You are an expert literary recommendation engine.
+
         User's Reading Preferences:
         {user.preference_summary}
         
@@ -261,8 +245,19 @@ class EmbeddingRecommendationEngine:
                 model=self.llm_model,
                 contents=prompt
             )
-            
-            return json.loads(response.text)
+
+            # Handle markdown-wrapped JSON responses
+            response_text = response.text
+
+            #print(response_text)
+
+            # Extract JSON from markdown code block
+            start = response_text.find('{')
+            end = response_text.rfind('}') + 1
+            if start != -1 and end > start:
+                response_text = response_text[start:end]
+
+            return json.loads(response_text)
         except Exception as e:
             print(f"LLM scoring error: {e}")
             # Fallback to neutral scores
@@ -273,7 +268,11 @@ class EmbeddingRecommendationEngine:
         """Populate UserWorkPool with embedding-based recommendation scores"""
         
         for work_type in ['poem', 'short_story', 'essay']:
-            recommendations = self.generate_embedding_recommendations(
+            # recommendations = self.generate_embedding_recommendations(
+            #     user_id, 
+            #     work_type
+            # )
+            recommendations = self.generate_hybrid_recommendations(
                 user_id, 
                 work_type
             )

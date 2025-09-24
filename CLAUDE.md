@@ -72,7 +72,10 @@ The app uses an embedding-based recommendation system powered by Google Gemini A
 
 **Individual Recommendations** 
 - Each work type (poem/story/essay) recommended independently
+- after user onboards, calls populate_user_work_pool() to generate workpool for user
+    - weighs embedding similarity and llm output
 - Daily algorithm selects from user's available work pool
+    - TODO: how to update work pool based on feedback?
 - Ratings tracked per work for learning system
 
 **Embedding Technology**
